@@ -1,0 +1,3 @@
+[submodule "salon"]
+	path = salon
+	url = https://github.com/Aadityzone/maison-belle-salon.git
