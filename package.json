@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev salon",
     "seed": "tsx scripts/seed.ts",
-    "build": "next build",
-    "start": "next start",
+    "build": "next build salon",
+    "start": "next start salon",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
