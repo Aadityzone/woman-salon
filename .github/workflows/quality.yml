@@ -1,0 +1,53 @@
+name: Quality checks
+
+on:
+  push:
+    branches: ["main", "feat/luxury-salon-scroll-demo"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand(\"ping\").ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      MONGODB_URI: mongodb://127.0.0.1:27017/maison_belle
+      OWNER_EMAIL: owner@example.com
+      OWNER_SESSION_SECRET: ci-only-session-secret-replace-before-production-123456789
+      SALON_OPEN_TIME: "10:00"
+      SALON_CLOSE_TIME: "19:00"
+      NEXT_PUBLIC_SALON_HOURS: "10:00 AM – 7:00 PM"
+      E2E_FULL_FLOW: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: Configure disposable test owner
+        run: |
+          HASH="$(node -e 'console.log(require("bcryptjs").hashSync("TestOwnerPass123!", 4))')"
+          echo "OWNER_PASSWORD_HASH=$HASH" >> "$GITHUB_ENV"
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Production build
+        run: npm run build
+      - name: End-to-end tests
+        run: npm run test:e2e
